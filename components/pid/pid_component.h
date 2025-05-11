@@ -19,6 +19,7 @@ namespace pid {
 
 class PIDComponent : public Component {
 #ifdef USE_NUMBER
+  SUB_NUMBER(ff_output);
   SUB_NUMBER(target);
 
   SUB_NUMBER(kp);
@@ -82,7 +83,7 @@ public:
 
  protected:
 
-  void update_pid_(float current_value);
+    void update_pid_(float current_value, float feedforward_value);
 
 
   #ifdef USE_OUTPUT
@@ -96,6 +97,8 @@ public:
 
   float output_value_{0.};
   float target_value_{NAN};
+  float input_value_{0};
+  float feedforward_value_{0};
 };
 
 

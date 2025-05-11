@@ -45,6 +45,7 @@ CONF_KD_MULTIPLIER = "kd_multiplier"
 CONF_TARGET_NUMBER = "target_number"
 CONF_TARGET_SENSOR = "target_sensor"
 CONF_CURRENT_VALUE = "current_value"
+CONF_FF_OUTPUT = "feedforward_output"
 
 def validate(config):
     if not (CONF_TARGET_NUMBER in config) ^ (CONF_TARGET_SENSOR in config):
@@ -65,6 +66,7 @@ CONFIG_SCHEMA = cv.All(
         {
             cv.GenerateID(): cv.declare_id(PIDComponent),
             cv.Required(CONF_CURRENT_VALUE): cv.use_id(sensor.Sensor),
+            cv.Optional(CONF_FF_OUTPUT): cv.use_id(number.Number),
             cv.Optional(CONF_TARGET_SENSOR): cv.use_id(sensor.Sensor),
             cv.Optional(CONF_TARGET_NUMBER): cv.use_id(number.Number),
             cv.Optional(CONF_HUMIDITY_SENSOR): cv.use_id(sensor.Sensor),
@@ -111,6 +113,10 @@ async def to_code(config):
 
     sens = await cg.get_variable(config[CONF_CURRENT_VALUE])
     cg.add(var.set_input_sensor(sens))
+
+    if CONF_FF_OUTPUT in config:
+        num = await cg.get_variable(config[CONF_FF_OUTPUT])
+        cg.add(var.set_ff_output_number(num))
 
     if CONF_TARGET_SENSOR in config:
         sens = await cg.get_variable(config[CONF_TARGET_SENSOR])

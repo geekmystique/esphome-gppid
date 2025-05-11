@@ -6,7 +6,7 @@ namespace esphome {
 namespace pid {
 
 struct PIDController {
-  float update(float setpoint, float process_value);
+    float update(float setpoint, float process_value, float feedforward);
 
   void reset_integral_term() { integral_term_ = 0; }
   void set_starting_integral_term(float in) { integral_term_ = in; }

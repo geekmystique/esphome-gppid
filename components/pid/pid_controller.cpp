@@ -4,7 +4,9 @@
 namespace esphome {
 namespace pid {
 
-float PIDController::update(float setpoint, float process_value) {
+    float PIDController::update(float setpoint,
+                                float process_value,
+                                float feedforward) {
   // e(t) ... error at timestamp t
   // r(t) ... setpoint
   // y(t) ... process value (sensor reading)
@@ -20,18 +22,18 @@ float PIDController::update(float setpoint, float process_value) {
   calculate_derivative_term_(setpoint);
 
   // u(t) := p(t) + i(t) + d(t)
-  float output = proportional_term_ + integral_term_ + derivative_term_;
+  float output = feedforward + proportional_term_ + integral_term_ + derivative_term_;
 
   // To prevent windup, if the output is outside its limits, we
   // recalculate the integral term to put the output at the limit.
   if (output < min_output_)
   {
-      integral_term_ = min_output_ - proportional_term_ - derivative_term_;
+      integral_term_ = min_output_ - feedforward - proportional_term_ - derivative_term_;
       output = min_output_;
   }
   else if (output > max_output_)
   {
-      integral_term_ = max_output_ - proportional_term_ - derivative_term_;
+      integral_term_ = max_output_ - feedforward - proportional_term_ - derivative_term_;
       output = max_output_;
   }
   
