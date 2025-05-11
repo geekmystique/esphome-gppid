@@ -1,4 +1,5 @@
 #include "pid_controller.h"
+#include "esphome/core/helpers.h"
 
 namespace esphome {
 namespace pid {
@@ -21,9 +22,20 @@ float PIDController::update(float setpoint, float process_value) {
   // u(t) := p(t) + i(t) + d(t)
   float output = proportional_term_ + integral_term_ + derivative_term_;
 
-  // smooth/sample the output
-  int samples = in_deadband() ? deadband_output_samples_ : output_samples_;
-  return weighted_average_(output_list_, output, samples);
+  // To prevent windup, if the output is outside its limits, we
+  // recalculate the integral term to put the output at the limit.
+  if (output < min_output_)
+  {
+      integral_term_ = min_output_ - proportional_term_ - derivative_term_;
+      output = min_output_;
+  }
+  else if (output > max_output_)
+  {
+      integral_term_ = max_output_ - proportional_term_ - derivative_term_;
+      output = max_output_;
+  }
+  
+  return output;
 }
 
 bool PIDController::in_deadband() {
@@ -54,19 +66,11 @@ void PIDController::calculate_integral_term_() {
   float new_integral = error_ * dt_ * ki_;
 
   if (in_deadband()) {
-    // shallow the integral when in the deadband
-    accumulated_integral_ += new_integral * ki_multiplier_;
+      // shallow the integral when in the deadband
+      integral_term_ += new_integral * ki_multiplier_;
   } else {
-    accumulated_integral_ += new_integral;
+    integral_term_ += new_integral;
   }
-
-  // constrain accumulated integral value
-  if (!std::isnan(min_integral_) && accumulated_integral_ < min_integral_)
-    accumulated_integral_ = min_integral_;
-  if (!std::isnan(max_integral_) && accumulated_integral_ > max_integral_)
-    accumulated_integral_ = max_integral_;
-
-  integral_term_ = accumulated_integral_;
 }
 
 void PIDController::calculate_derivative_term_(float setpoint) {
@@ -82,9 +86,6 @@ void PIDController::calculate_derivative_term_(float setpoint) {
   previous_error_ = error_;
   previous_setpoint_ = setpoint;
 
-  // smooth the derivative samples
-  derivative = weighted_average_(derivative_list_, derivative, derivative_samples_);
-
   derivative_term_ = kd_ * derivative;
 
   if (in_deadband()) {
@@ -93,26 +94,6 @@ void PIDController::calculate_derivative_term_(float setpoint) {
   }
 }
 
-float PIDController::weighted_average_(std::deque<float> &list, float new_value, int samples) {
-  // if only 1 sample needed, clear the list and return
-  if (samples == 1) {
-    list.clear();
-    return new_value;
-  }
-
-  // add the new item to the list
-  list.push_front(new_value);
-
-  // keep only 'samples' readings, by popping off the back of the list
-  while (list.size() > samples)
-    list.pop_back();
-
-  // calculate and return the average of all values in the list
-  float sum = 0;
-  for (auto &elem : list)
-    sum += elem;
-  return sum / list.size();
-}
 
 float PIDController::calculate_relative_time_() {
   uint32_t now = millis();

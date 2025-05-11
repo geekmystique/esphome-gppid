@@ -36,10 +36,8 @@ public:
   void set_kp(float kp) { controller_.kp_ = kp; }
   void set_ki(float ki) { controller_.ki_ = ki; }
   void set_kd(float kd) { controller_.kd_ = kd; }
-  void set_min_integral(float min_integral) { controller_.min_integral_ = min_integral; }
-  void set_max_integral(float max_integral) { controller_.max_integral_ = max_integral; }
-  void set_output_samples(int in) { controller_.output_samples_ = in; }
-  void set_derivative_samples(int in) { controller_.derivative_samples_ = in; }
+  void set_min_output(float min_output) { controller_.min_output_ = min_output; }
+  void set_max_output(float max_output) { controller_.max_output_ = max_output; }
 
   void set_threshold_low(float in) { controller_.threshold_low_ = in; }
   void set_threshold_high(float in) { controller_.threshold_high_ = in; }
@@ -60,13 +58,9 @@ public:
   float get_kp() { return controller_.kp_; }
   float get_ki() { return controller_.ki_; }
   float get_kd() { return controller_.kd_; }
-  float get_min_integral() { return controller_.min_integral_; }
-  float get_max_integral() { return controller_.max_integral_; }
   float get_proportional_term() const { return controller_.proportional_term_; }
   float get_integral_term() const { return controller_.integral_term_; }
   float get_derivative_term() const { return controller_.derivative_term_; }
-  int get_output_samples() { return controller_.output_samples_; }
-  int get_derivative_samples() { return controller_.derivative_samples_; }
 
   float get_threshold_low() { return controller_.threshold_low_; }
   float get_threshold_high() { return controller_.threshold_high_; }
@@ -85,7 +79,6 @@ public:
   }
 
   void reset_integral_term();
-  void set_output_range(float output_min, float output_max) { output_min_= output_min; output_max_ = output_max; }
 
  protected:
 
@@ -94,8 +87,6 @@ public:
 
   #ifdef USE_OUTPUT
   output::FloatOutput *output_{nullptr};
-  float output_min_;
-  float output_max_;
   #endif
 
 

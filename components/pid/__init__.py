@@ -19,8 +19,6 @@ PIDComponent = pid_ns.class_("PIDComponent", cg.Component)
 # )
 
 CONF_OUTPUT_PARAMETERS = "output"
-CONF_OUTPUT_MIN = "min"
-CONF_OUTPUT_MAX = "max"
 CONF_KP = "kp"
 CONF_KI = "ki"
 CONF_STARTING_INTEGRAL_TERM = "starting_integral_term"
@@ -32,10 +30,8 @@ CONF_CONTROL_PARAMETERS = "control_parameters"
 CONF_NOISEBAND = "noiseband"
 CONF_POSITIVE_OUTPUT = "positive_output"
 CONF_NEGATIVE_OUTPUT = "negative_output"
-CONF_MIN_INTEGRAL = "min_integral"
-CONF_MAX_INTEGRAL = "max_integral"
-CONF_OUTPUT_AVERAGING_SAMPLES = "output_averaging_samples"
-CONF_DERIVATIVE_AVERAGING_SAMPLES = "derivative_averaging_samples"
+CONF_MIN_OUTPUT = "min_output"
+CONF_MAX_OUTPUT = "max_output"
 
 # Deadband parameters
 CONF_DEADBAND_PARAMETERS = "deadband_parameters"
@@ -75,8 +71,6 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_OUTPUT_PARAMETERS): cv.Schema(
                 {
                     cv.Required(cv.GenerateID()): cv.use_id(output.FloatOutput),
-                    cv.Required(CONF_OUTPUT_MIN): cv.float_,
-                    cv.Required(CONF_OUTPUT_MAX): cv.float_,
                 }
             ),
             cv.Optional(CONF_DEADBAND_PARAMETERS): cv.Schema(
@@ -100,10 +94,8 @@ CONFIG_SCHEMA = cv.All(
                     cv.Optional(CONF_KI_NUM): cv.use_id(number.Number),
                     cv.Optional(CONF_KD_NUM): cv.use_id(number.Number),
                     cv.Optional(CONF_STARTING_INTEGRAL_TERM, default=0.0): cv.float_,
-                    cv.Optional(CONF_MIN_INTEGRAL, default=-1): cv.float_,
-                    cv.Optional(CONF_MAX_INTEGRAL, default=1): cv.float_,
-                    cv.Optional(CONF_DERIVATIVE_AVERAGING_SAMPLES, default=1): cv.int_,
-                    cv.Optional(CONF_OUTPUT_AVERAGING_SAMPLES, default=1): cv.int_,
+                    cv.Optional(CONF_MIN_OUTPUT, default=0): cv.float_,
+                    cv.Optional(CONF_MAX_OUTPUT, default=1): cv.float_,
                 }
             ),
         }
@@ -131,17 +123,13 @@ async def to_code(config):
     if CONF_OUTPUT_PARAMETERS in config:
         params = config[CONF_OUTPUT_PARAMETERS]
         out = await cg.get_variable(params[CONF_ID])
-        omin = params[CONF_OUTPUT_MIN]
-        omax = params[CONF_OUTPUT_MAX]
         cg.add(var.set_output(out))
-        cg.add(var.set_output_range(omin, omax))
 
     params = config[CONF_CONTROL_PARAMETERS]
     cg.add(var.set_kp(params[CONF_KP]))
     cg.add(var.set_ki(params[CONF_KI]))
     cg.add(var.set_kd(params[CONF_KD]))
     cg.add(var.set_starting_integral_term(params[CONF_STARTING_INTEGRAL_TERM]))
-    cg.add(var.set_derivative_samples(params[CONF_DERIVATIVE_AVERAGING_SAMPLES]))
     if CONF_KP_NUM in params:
         num = await cg.get_variable(params[CONF_KP_NUM])
         cg.add(var.set_kp_number(num))
@@ -153,12 +141,10 @@ async def to_code(config):
         cg.add(var.set_kd_number(num))
 
 
-    cg.add(var.set_output_samples(params[CONF_OUTPUT_AVERAGING_SAMPLES]))
-
-    if CONF_MIN_INTEGRAL in params:
-        cg.add(var.set_min_integral(params[CONF_MIN_INTEGRAL]))
-    if CONF_MAX_INTEGRAL in params:
-        cg.add(var.set_max_integral(params[CONF_MAX_INTEGRAL]))
+    if CONF_MIN_OUTPUT in params:
+        cg.add(var.set_min_output(params[CONF_MIN_OUTPUT]))
+    if CONF_MAX_OUTPUT in params:
+        cg.add(var.set_max_output(params[CONF_MAX_OUTPUT]))
 
     if CONF_DEADBAND_PARAMETERS in config:
         params = config[CONF_DEADBAND_PARAMETERS]
