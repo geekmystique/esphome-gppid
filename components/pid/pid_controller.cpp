@@ -6,13 +6,16 @@ namespace pid {
 
 float PIDController::update(float setpoint, float process_value,
                             float feedforward) {
+    // ff(t) .. feed-forward control input
     // e(t) ... error at timestamp t
     // r(t) ... setpoint
     // y(t) ... process value (sensor reading)
     // u(t) ... output value
 
+    dt_ = calculate_relative_time_();
+    
     if (enable_) {
-        dt_ = calculate_relative_time_();
+        // Only update controller values if enabled
 
         // e(t) := r(t) - y(t)
         error_ = setpoint - process_value;
@@ -20,30 +23,25 @@ float PIDController::update(float setpoint, float process_value,
         calculate_proportional_term_();
         calculate_integral_term_();
         calculate_derivative_term_(setpoint);
+    }
 
-        float const valid_ff = std::isnan(feedforward) ? 0 : feedforward;
+    // FF value, if present, is passed through regardless of enable state.
+    float const valid_ff = std::isnan(feedforward) ? 0 : feedforward;
 
-        // u(t) := ff(t) + p(t) + i(t) + d(t)
-        float output =
-            valid_ff + proportional_term_ + integral_term_ + derivative_term_;
+    // u(t) := ff(t) + p(t) + i(t) + d(t)
+    float output =
+        valid_ff + proportional_term_ + integral_term_ + derivative_term_;
 
-        // To prevent windup, if the output is outside its limits, we
-        // recalculate the integral term to put the output at the limit.
-        if (output < min_output_) {
-            integral_term_ =
-                min_output_ - valid_ff - proportional_term_ - derivative_term_;
-            output = min_output_;
-        } else if (output > max_output_) {
-            integral_term_ =
-                max_output_ - valid_ff - proportional_term_ - derivative_term_;
-            output = max_output_;
-        }
-    } else {
-        // If disabled, just pass feedforward value, if present, through to the
-        // output.
-        if (!std::isnan(feedforward)) {
-            output = feedforward;
-        }
+    // To prevent windup, if the output is outside its limits, we
+    // recalculate the integral term to put the output at the limit.
+    if (output < min_output_) {
+        integral_term_ =
+            min_output_ - valid_ff - proportional_term_ - derivative_term_;
+        output = min_output_;
+    } else if (output > max_output_) {
+        integral_term_ =
+            max_output_ - valid_ff - proportional_term_ - derivative_term_;
+        output = max_output_;
     }
 
     return output;

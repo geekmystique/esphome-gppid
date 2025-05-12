@@ -19,10 +19,10 @@ void PIDComponent::setup() {
             this->target_value_ = state;
         });
     }
-    if (this->enable_binary_sensor_ != nullptr) {
-        this->enable_binary_sensor_->add_on_state_callback([this](bool state) {
-            ESP_LOGD(TAG, "enable sensor callback - submitting value %f", state);
-            this->enable_value_ = state;
+    if (this->enable_switch_ != nullptr) {
+        this->enable_switch_->add_on_state_callback([this](bool state) {
+            ESP_LOGD(TAG, "enable switch callback - submitting value %d", state);
+            this->set_enable(state);
         });
     }
 #ifdef USE_NUMBER

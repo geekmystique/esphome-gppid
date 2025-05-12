@@ -5,7 +5,7 @@
 #include "esphome/core/helpers.h"
 #include "esphome/core/automation.h"
 #include "esphome/components/sensor/sensor.h"
-#include "esphome/components/binary_sensor/binary_sensor.h"
+#include "esphome/components/switch/switch.h"
 #ifdef USE_OUTPUT
 #include "esphome/components/output/float_output.h"
 #endif
@@ -29,7 +29,7 @@ class PIDComponent : public Component {
 #endif
 SUB_SENSOR(target);
 SUB_SENSOR(input);
-SUB_BINARY_SENSOR(enable);
+SUB_SWITCH(enable);
 
 public:
   PIDComponent() = default;
@@ -48,7 +48,7 @@ public:
   void set_ki_multiplier(float in) { controller_.ki_multiplier_ = in; }
   void set_kd_multiplier(float in) { controller_.kd_multiplier_ = in; }
   void set_starting_integral_term(float in) { controller_.set_starting_integral_term(in); }
-
+  void set_enable(bool in) { controller_.enable_ = in; }
 
   void set_deadband_output_samples(int in) { controller_.deadband_output_samples_ = in; }
 
@@ -84,11 +84,9 @@ public:
   void reset_integral_term();
 
  protected:
+  void update_pid_(float current_value, float feedforward_value);
 
-    void update_pid_(float current_value, float feedforward_value);
-
-
-  #ifdef USE_OUTPUT
+#ifdef USE_OUTPUT
   output::FloatOutput *output_{nullptr};
   #endif
 
@@ -97,7 +95,6 @@ public:
   /// Output value as reported by the PID controller, for PIDComponentSensor
   CallbackManager<void()> pid_computed_callback_;
 
-    bool enable_value_{false};
   float output_value_{0.};
   float target_value_{NAN};
   float input_value_{0};

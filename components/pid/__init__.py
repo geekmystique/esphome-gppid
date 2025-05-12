@@ -1,7 +1,7 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import automation
-from esphome.components import sensor, output, number, binary_sensor
+from esphome.components import sensor, output, number, switch
 from esphome.const import CONF_HUMIDITY_SENSOR, CONF_ID, CONF_OUTPUT
 
 CODEOWNERS = ["@OttoWinter", "@hsteinhaus"]
@@ -46,7 +46,7 @@ CONF_TARGET_NUMBER = "target_number"
 CONF_TARGET_SENSOR = "target_sensor"
 CONF_CURRENT_VALUE = "current_value"
 CONF_FF_INPUT = "feedforward_input"
-CONF_ENABLE = "enable_sensor"
+CONF_ENABLE = "enable_switch"
 
 def validate(config):
     if not (CONF_TARGET_NUMBER in config) ^ (CONF_TARGET_SENSOR in config):
@@ -68,7 +68,7 @@ CONFIG_SCHEMA = cv.All(
             cv.GenerateID(): cv.declare_id(PIDComponent),
             cv.Required(CONF_CURRENT_VALUE): cv.use_id(sensor.Sensor),
             cv.Optional(CONF_FF_INPUT): cv.use_id(number.Number),
-            cv.Optional(CONF_ENABLE): cv.use_id(binary_sensor.BinarySensor),
+            cv.Optional(CONF_ENABLE): cv.use_id(switch.Switch),
             cv.Optional(CONF_TARGET_SENSOR): cv.use_id(sensor.Sensor),
             cv.Optional(CONF_TARGET_NUMBER): cv.use_id(number.Number),
             cv.Optional(CONF_HUMIDITY_SENSOR): cv.use_id(sensor.Sensor),
@@ -121,8 +121,8 @@ async def to_code(config):
         cg.add(var.set_ff_input_number(num))
 
     if CONF_ENABLE in config:
-        bs = await cg.get_variable(config[CONF_ENABLE])
-        cg.add(var.set_enable_binary_sensor(bs))
+        switch = await cg.get_variable(config[CONF_ENABLE])
+        cg.add(var.set_enable_switch(switch))
 
     if CONF_TARGET_SENSOR in config:
         sens = await cg.get_variable(config[CONF_TARGET_SENSOR])
