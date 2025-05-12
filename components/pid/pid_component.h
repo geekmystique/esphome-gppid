@@ -5,6 +5,7 @@
 #include "esphome/core/helpers.h"
 #include "esphome/core/automation.h"
 #include "esphome/components/sensor/sensor.h"
+#include "esphome/components/binary_sensor/binary_sensor.h"
 #ifdef USE_OUTPUT
 #include "esphome/components/output/float_output.h"
 #endif
@@ -19,7 +20,7 @@ namespace pid {
 
 class PIDComponent : public Component {
 #ifdef USE_NUMBER
-  SUB_NUMBER(ff_output);
+  SUB_NUMBER(ff_input);
   SUB_NUMBER(target);
 
   SUB_NUMBER(kp);
@@ -28,6 +29,7 @@ class PIDComponent : public Component {
 #endif
 SUB_SENSOR(target);
 SUB_SENSOR(input);
+SUB_BINARY_SENSOR(enable);
 
 public:
   PIDComponent() = default;
@@ -95,10 +97,11 @@ public:
   /// Output value as reported by the PID controller, for PIDComponentSensor
   CallbackManager<void()> pid_computed_callback_;
 
+    bool enable_value_{false};
   float output_value_{0.};
   float target_value_{NAN};
   float input_value_{0};
-  float feedforward_value_{0};
+  float feedforward_value_{NAN};
 };
 
 

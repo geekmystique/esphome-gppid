@@ -19,10 +19,16 @@ void PIDComponent::setup() {
             this->target_value_ = state;
         });
     }
+    if (this->enable_binary_sensor_ != nullptr) {
+        this->enable_binary_sensor_->add_on_state_callback([this](bool state) {
+            ESP_LOGD(TAG, "enable sensor callback - submitting value %f", state);
+            this->enable_value_ = state;
+        });
+    }
 #ifdef USE_NUMBER
-    if (this->ff_output_number_ != nullptr) {
-        this->ff_output_number_->add_on_state_callback([this](float state) {
-            ESP_LOGD(TAG, "ff output number callback - submitting value %f", state);
+    if (this->ff_input_number_ != nullptr) {
+        this->ff_input_number_->add_on_state_callback([this](float state) {
+            ESP_LOGD(TAG, "ff input number callback - submitting value %f", state);
             if (std::isfinite(state)) {
                 this->feedforward_value_ = state;
                 this->update_pid_(this->input_value_, this->feedforward_value_);
