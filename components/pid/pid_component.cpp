@@ -83,13 +83,12 @@ void PIDComponent::dump_config() {
     }
 }
 
-    void PIDComponent::update_pid_(float current_value, float feedforward_value) {
-    if (std::isfinite(current_value) && std::isfinite(this->target_value_) &&
-        std::isfinite(feedforward_value)) {
-        float value = this->controller_.update(this->target_value_,
-                                               current_value,
-                                               feedforward_value);
-        ESP_LOGD(TAG, "update_pid: %f -> %f: %f", current_value, this->target_value_, value);
+void PIDComponent::update_pid_(float current_value, float feedforward_value) {
+    if (std::isfinite(current_value) && std::isfinite(this->target_value_)) {
+        float value = this->controller_.update(
+            this->target_value_, current_value, feedforward_value);
+        ESP_LOGD(TAG, "update_pid: %f -> %f: %f", current_value,
+                 this->target_value_, value);
         ESP_LOGD(TAG, "write output value %f", value);
         this->output_value_ = value;
         this->pid_computed_callback_.call();
@@ -99,10 +98,9 @@ void PIDComponent::dump_config() {
             this->output_->set_level(value);
         }
 #endif
-    }
-    else {
-        ESP_LOGD(TAG, "nan");
-    }
+        } else {
+            ESP_LOGD(TAG, "nan");
+        }
 }
 
 void PIDComponent::reset_integral_term() {
