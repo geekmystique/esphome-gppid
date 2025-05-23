@@ -40,6 +40,12 @@ void PIDComponent::setup() {
             ESP_LOGD(TAG, "target number callback - submitting value %f", state);
             if (std::isfinite(state)) this->target_value_ = state;
         });
+        if (this->target_number_->has_state())
+        {
+            float const state = this->target_number_->state;
+            ESP_LOGD(TAG, "updating target number - submitting value %f", state);
+            if (std::isfinite(state)) this->target_value_ = state;
+        }            
     }
     if (this->kp_number_ != nullptr) {
         this->kp_number_->add_on_state_callback([this](float state) {
@@ -99,7 +105,8 @@ void PIDComponent::update_pid_(float current_value, float feedforward_value) {
         }
 #endif
         } else {
-            ESP_LOGD(TAG, "nan");
+            ESP_LOGD(TAG, "not updating: current_value %f target_value %f",
+                     current_value, this->target_value_);
         }
 }
 
