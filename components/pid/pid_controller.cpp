@@ -21,30 +21,31 @@ float PIDController::update(float setpoint, float process_value,
         error_ = setpoint - process_value;
 
         calculate_proportional_term_();
-        calculate_integral_term_();
         calculate_derivative_term_(setpoint);
     }
 
     // FF value, if present, is passed through regardless of enable state.
     float const valid_ff = std::isnan(feedforward) ? 0 : feedforward;
 
+    // First calculate tentative output before adding the integral.
     // u(t) := ff(t) + p(t) + i(t) + d(t)
-    float output =
+    float const tmp_output =
         valid_ff + proportional_term_ + integral_term_ + derivative_term_;
 
-    // To prevent windup, if the output is outside its limits, we
-    // recalculate the integral term to put the output at the limit.
-    if (output < min_output_) {
-        integral_term_ =
-            min_output_ - valid_ff - proportional_term_ - derivative_term_;
-        output = min_output_;
-    } else if (output > max_output_) {
-        integral_term_ =
-            max_output_ - valid_ff - proportional_term_ - derivative_term_;
-        output = max_output_;
+    // Update integral term. To prevent windup, if the output is
+    // outside the limits, we do not add the integral term if doing so
+    // would bring the output more outside the limits. We do let it
+    // evolve inward, though.
+    if (enable_ &&
+        !(((tmp_output < min_output_) && (error_*ki_ < 0)) ||
+          ((tmp_output > max_output_) && (error_*ki_ > 0)))) {
+        calculate_integral_term_();
     }
 
-    return output;
+    // Recalculate output after updating integral term
+    float const output = valid_ff + proportional_term_ + integral_term_ + derivative_term_;
+
+    return std::min(std::max(output, min_output_), max_output_);
 }
 
 bool PIDController::in_deadband() {
@@ -72,7 +73,7 @@ void PIDController::calculate_proportional_term_() {
 
 void PIDController::calculate_integral_term_() {
   // i(t) := K_i * \int_{0}^{t} e(t) dt
-  float new_integral = error_ * dt_ * ki_;
+  float const new_integral = error_ * dt_ * ki_;
 
   if (in_deadband()) {
       // shallow the integral when in the deadband
