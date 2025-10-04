@@ -71,11 +71,18 @@ void PIDComponent::setup() {
             if (std::isfinite(state)) this->set_min_output(state);
         });
     }
+
+
     if (this->max_output_number_ != nullptr) {
         this->max_output_number_->add_on_state_callback([this](float state) {
             ESP_LOGD(TAG, "max output callback - submitting value %f", state);
             if (std::isfinite(state)) this->set_max_output(state);
         });
+    if (this->max_output_number_->has_state()) {
+            float const state = this->max_output_number_->state;
+            ESP_LOGD(TAG, "updating max output - submitting value %f", state);
+            if (std::isfinite(state)) this->set_max_output(state);
+        }
     }
 
 #endif
