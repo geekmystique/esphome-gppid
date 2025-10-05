@@ -20,9 +20,7 @@ void PIDComponent::setup() {
         });
     }
     if (this->enable_switch_ != nullptr) {
-
-        this->enable_switch_->add_on_state_callback([this](
-            bool state) {
+        this->enable_switch_->add_on_state_callback([this](bool state) {
             ESP_LOGD(TAG, "enable switch callback - submitting value %d", state);
             this->set_enable(state);
         });
@@ -98,4 +96,47 @@ void PIDComponent::setup() {
 void PIDComponent::dump_config() {
     ESP_LOGCONFIG(TAG, "PID Controller", this);
     ESP_LOGCONFIG(TAG, "  Control Parameters:");
-    ESP_LOGCONFIG(TAG, "    kp: %.5f, ki: %.5f, kd: %.5
+    ESP_LOGCONFIG(TAG, "    kp: %.5f, ki: %.5f, kd: %.5f",
+                  controller_.kp_, controller_.ki_, controller_.kd_);
+
+    if (controller_.threshold_low_ == 0 && controller_.threshold_high_ == 0) {
+        ESP_LOGCONFIG(TAG, "  Deadband disabled.");
+    } else {
+        ESP_LOGCONFIG(TAG, "  Deadband Parameters:");
+        ESP_LOGCONFIG(
+            TAG,
+            "    threshold: %0.5f to %0.5f, multipliers(kp: %.5f, ki: "
+            "%.5f, kd: %.5f), output samples: %d",
+            controller_.threshold_low_, controller_.threshold_high_,
+            controller_.kp_multiplier_, controller_.ki_multiplier_,
+            controller_.kd_multiplier_, controller_.deadband_output_samples_);
+    }
+}
+
+void PIDComponent::update_pid_(float current_value, float feedforward_value) {
+    if (std::isfinite(current_value) && std::isfinite(this->target_value_)) {
+        float value = this->controller_.update(
+            this->target_value_, current_value, feedforward_value);
+        ESP_LOGD(TAG, "update_pid: %f -> %f: %f", current_value,
+                 this->target_value_, value);
+        ESP_LOGD(TAG, "write output value %f", value);
+        this->output_value_ = value;
+        this->pid_computed_callback_.call();
+#ifdef USE_OUTPUT
+        ESP_LOGD(TAG, "write output: tmp: %f", value);
+        if (this->output_ != nullptr) {
+            this->output_->set_level(value);
+        }
+#endif
+        } else {
+            ESP_LOGD(TAG, "not updating: current_value %f target_value %f",
+                     current_value, this->target_value_);
+        }
+}
+
+void PIDComponent::reset_integral_term() {
+    this->controller_.reset_integral_term();
+}
+
+}  // namespace pid
+}  // namespace esphome
