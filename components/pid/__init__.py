@@ -32,6 +32,8 @@ CONF_POSITIVE_OUTPUT = "positive_output"
 CONF_NEGATIVE_OUTPUT = "negative_output"
 CONF_MIN_OUTPUT = "min_output"
 CONF_MAX_OUTPUT = "max_output"
+CONF_OUTPUT_MIN_NUM = "output_min_num"
+CONF_OUTPUT_MAX_NUM = "output_max_num"
 
 # Deadband parameters
 CONF_DEADBAND_PARAMETERS = "deadband_parameters"
@@ -97,6 +99,8 @@ CONFIG_SCHEMA = cv.All(
                     cv.Optional(CONF_KP_NUM): cv.use_id(number.Number),
                     cv.Optional(CONF_KI_NUM): cv.use_id(number.Number),
                     cv.Optional(CONF_KD_NUM): cv.use_id(number.Number),
+                    cv.Optional(CONF_OUTPUT_MIN_NUM): cv.use_id(number.Number),
+                    cv.Optional(CONF_OUTPUT_MAX_NUM): cv.use_id(number.Number),
                     cv.Optional(CONF_STARTING_INTEGRAL_TERM, default=0.0): cv.float_,
                     cv.Optional(CONF_MIN_OUTPUT, default=0): cv.float_,
                     cv.Optional(CONF_MAX_OUTPUT, default=1): cv.float_,
@@ -151,6 +155,12 @@ async def to_code(config):
     if CONF_KD_NUM in params:
         num = await cg.get_variable(params[CONF_KD_NUM])
         cg.add(var.set_kd_number(num))
+    if CONF_OUTPUT_MIN_NUM in params:
+        num = await cg.get_variable(params[CONF_OUTPUT_MIN_NUM])
+        cg.add(var.set_min_output_number(num))
+    if CONF_OUTPUT_MAX_NUM in params:
+        num = await cg.get_variable(params[CONF_OUTPUT_MAX_NUM])
+        cg.add(var.set_max_output_number(num))
 
 
     if CONF_MIN_OUTPUT in params:

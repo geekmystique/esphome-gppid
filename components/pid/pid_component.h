@@ -26,6 +26,9 @@ class PIDComponent : public Component {
   SUB_NUMBER(kp);
   SUB_NUMBER(ki);
   SUB_NUMBER(kd);
+
+  SUB_NUMBER(min_output);
+  SUB_NUMBER(max_output);
 #endif
 SUB_SENSOR(target);
 SUB_SENSOR(input);
