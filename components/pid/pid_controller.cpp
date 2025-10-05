@@ -12,6 +12,17 @@ float PIDController::update(float setpoint, float process_value,
     // y(t) ... process value (sensor reading)
     // u(t) ... output value
 
+    if (!enable_) {
+        // When disabled, reset all internal terms and return min_output
+        error_ = 0.0f;
+        proportional_term_ = 0.0f;
+        integral_term_ = 0.0f;
+        derivative_term_ = 0.0f;
+        previous_error_ = 0.0f;
+        previous_setpoint_ = NAN;
+        return min_output_;
+    }
+
     dt_ = calculate_relative_time_();
     
     if (enable_) {
@@ -23,6 +34,7 @@ float PIDController::update(float setpoint, float process_value,
         calculate_proportional_term_();
         calculate_derivative_term_(setpoint);
     }
+
 
     // FF value, if present, is passed through regardless of enable state.
     float const valid_ff = std::isnan(feedforward) ? 0 : feedforward;
