@@ -9,7 +9,6 @@ static const char *const TAG = "pid";
 
 void PIDComponent::setup() {
     
-    this->set_enable(false); 
 
     this->input_sensor_->add_on_state_callback([this](float state) {
         ESP_LOGD(TAG, "input sensor callback - got value %f", state);
