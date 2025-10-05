@@ -13,14 +13,14 @@ float PIDController::update(float setpoint, float process_value,
     // u(t) ... output value
 
     if (!enable_) {
-        // When disabled, reset all internal terms and return 0
+        // When disabled, reset all internal terms and return min_output
         error_ = 0.0f;
         proportional_term_ = 0.0f;
         integral_term_ = 0.0f;
         derivative_term_ = 0.0f;
         previous_error_ = 0.0f;
         previous_setpoint_ = NAN;
-        return 0.0f;
+        return min_output_;
     }
 
     dt_ = calculate_relative_time_();
