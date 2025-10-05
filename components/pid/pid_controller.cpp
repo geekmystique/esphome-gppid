@@ -48,7 +48,7 @@ float PIDController::update(float setpoint, float process_value,
       return std::min(std::max(output, min_output_), max_output_);
 
     } else {
-      return(min_output_) //return minimum output if pid is disabled
+      return(min_output_); //return minimum output if pid is disabled
     }
 
 }
