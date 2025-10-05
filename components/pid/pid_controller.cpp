@@ -43,9 +43,14 @@ float PIDController::update(float setpoint, float process_value,
     }
 
     // Recalculate output after updating integral term
-    float const output = valid_ff + proportional_term_ + integral_term_ + derivative_term_;
+    if (enable_){
+      float const output = valid_ff + proportional_term_ + integral_term_ + derivative_term_;
+      return std::min(std::max(output, min_output_), max_output_);
 
-    return std::min(std::max(output, min_output_), max_output_);
+    } else {
+      return(min_output_) //return minimum output if pid is disabled
+    }
+
 }
 
 bool PIDController::in_deadband() {
