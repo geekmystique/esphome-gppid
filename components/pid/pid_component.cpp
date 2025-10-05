@@ -20,12 +20,10 @@ void PIDComponent::setup() {
         });
     }
     if (this->enable_switch_ != nullptr) {
-        this->enable_switch_->add_on_state_callback([this](bool state) {
+        this->enable_switch_->add_on_state_callback([this(bool state) {
             ESP_LOGD(TAG, "enable switch callback - submitting value %d", state);
             this->set_enable(state);
         });
-        
-        // Read initial state of the switch
         if (this->enable_switch_->has_state()) {
             bool const state = this->enable_switch_->state;
             ESP_LOGD(TAG, "initial enable switch state: %d", state);
