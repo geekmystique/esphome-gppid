@@ -48,10 +48,10 @@ float PIDController::update(float setpoint, float process_value,
     // outside the limits, we do not add the integral term if doing so
     // would bring the output more outside the limits. We do let it
     // evolve inward, though.
-    if (enable_ &&
-        !(((tmp_output < min_output_) && (error_*ki_ < 0)) ||
+if (enable_ &&
+!(((tmp_output < min_output_) && (error_*ki_ < 0)) ||
           ((tmp_output > max_output_) && (error_*ki_ > 0)))) {
-        calculate_integral_term_();
+calculate_integral_term_();
     }
 
     // Recalculate output after updating integral term
