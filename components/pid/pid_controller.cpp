@@ -37,7 +37,9 @@ float PIDController::update(float setpoint, float process_value,
 
 
     // FF value, if present, is passed through regardless of enable state.
-    float const valid_ff = std::isnan(feedforward) ? 0 : feedforward;
+    float const valid_ff = (!enable_ || std::isnan(feedforward)) ? 0 : feedforward;
+    
+    
 
     // First calculate tentative output before adding the integral.
     // u(t) := ff(t) + p(t) + i(t) + d(t)
